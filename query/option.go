@@ -1,5 +1,6 @@
 package query
 
+// Opt returns a new Query with the provided configuration
 type Opt func(Query) *Query
 
 func Resource(resourceType, name string) Opt {
@@ -47,6 +48,13 @@ func Scheme(scheme string) Opt {
 func Method(method string) Opt {
 	return func(q Query) *Query {
 		q.method = method
+		return &q
+	}
+}
+
+func AuthBearer(bearer string) Opt {
+	return func(q Query) *Query {
+		q.header.Add("Authorization", "Bearer "+bearer)
 		return &q
 	}
 }

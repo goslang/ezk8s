@@ -11,6 +11,8 @@ type Query struct {
 	host   string // includes port number
 	method string
 
+	header http.Header
+
 	apiVersion   string
 	namespace    string
 	resourceType string
@@ -25,6 +27,8 @@ func New(opts ...Opt) *Query {
 		scheme: "http",
 		host:   "localhost",
 		method: "GET",
+
+		header: make(http.Header),
 	}
 
 	newQ := q.With(opts...)
@@ -45,6 +49,7 @@ func (q *Query) Request() *http.Request {
 	req := &http.Request{
 		Method: q.method,
 		URL:    q.url(),
+		Header: q.header,
 	}
 
 	return req

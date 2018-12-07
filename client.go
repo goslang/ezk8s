@@ -2,6 +2,7 @@ package ezk8s
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/tma1/ezk8s/query"
@@ -25,7 +26,9 @@ func (cl *Client) Query(opts ...query.Opt) (*query.Result, error) {
 	)
 
 	result := query.NewResult()
-	response, err := cl.Do(q.Request())
+	req := q.Request()
+	fmt.Println(req.Header)
+	response, err := cl.Do(req)
 	if err != nil {
 		return nil, err
 	}

@@ -5,14 +5,18 @@ import (
 	"os"
 
 	k8s "github.com/tma1/ezk8s"
+	"github.com/tma1/ezk8s/config"
 	"github.com/tma1/ezk8s/query"
 )
 
 func main() {
 	cl := k8s.New(
-		query.Host("127.0.0.1:8001"),
-		query.Scheme("http"),
+		query.Host("192.168.99.100:8443"),
+		query.Scheme("https"),
+		query.AuthBearer("This is a test"),
 	)
+
+	config.LoadFromKubeConfig()
 
 	res, err := cl.Query(
 		query.Deployment("nginx-deployment"),
