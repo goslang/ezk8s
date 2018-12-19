@@ -31,6 +31,13 @@ func Pod(name string) Opt {
 	return Resource("pods", name)
 }
 
+func Label(name, value string) Opt {
+	return func(q Query) *Query {
+		q.labels.Add(name, value)
+		return &q
+	}
+}
+
 func Host(host string) Opt {
 	return func(q Query) *Query {
 		q.host = host

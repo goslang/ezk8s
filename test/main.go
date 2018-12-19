@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	conf, err := config.LoadFromKubeConfig("minikube")
+	conf, err := config.LoadFromKubeConfig("", "minikube")
 
 	cl := conf.Client(
 		ezk8s.QueryOpts(
@@ -20,26 +20,41 @@ func main() {
 	)
 
 	res, err := cl.Query(
-		query.Deployment("nginx-deployment"),
+		query.Pod(""),
+		query.Label("name", "nginx"),
 	)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 
-	var resourceVersion string
-	var generation float64
+	//var resourceVersion string
+	//var generation float64
+	//err = res.Scan(
+	//	query.Path{"$.metadata.resourceVersion", &resourceVersion},
+	//	query.Path{"$.metadata.generation", &generation},
+	//)
+	//if err != nil {
+	//	fmt.Println(err)
+	//	os.Exit(1)
+	//}
+
+	//fmt.Printf(
+	//	"generation = %v\nresourceVersion = %v\n",
+	//	generation, resourceVersion,
+	//)
+
+	var names []string
 	err = res.Scan(
-		query.Path{"$.metadata.resourceVersion", &resourceVersion},
-		query.Path{"$.metadata.generation", &generation},
+		query.Path{"$.items[:0].metadata.name", &names},
 	)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 
-	fmt.Printf(
-		"generation = %v\nresourceVersion = %v\n",
-		generation, resourceVersion,
-	)
+	fmt.Println("pod names:")
+	for _, name := range names {
+		fmt.Println(name)
+	}
 }

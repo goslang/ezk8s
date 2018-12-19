@@ -17,6 +17,8 @@ type Query struct {
 	namespace    string
 	resourceType string
 	resource     string
+
+	labels url.Values
 }
 
 func New(opts ...Opt) *Query {
@@ -29,6 +31,7 @@ func New(opts ...Opt) *Query {
 		method: "GET",
 
 		header: make(http.Header),
+		labels: make(url.Values),
 	}
 
 	newQ := q.With(opts...)
@@ -57,9 +60,10 @@ func (q *Query) Request() *http.Request {
 
 func (q *Query) url() *url.URL {
 	return &url.URL{
-		Scheme: q.scheme,
-		Host:   q.host,
-		Path:   q.path(),
+		Scheme:   q.scheme,
+		Host:     q.host,
+		Path:     q.path(),
+		RawQuery: q.labels.Encode(),
 	}
 }
 

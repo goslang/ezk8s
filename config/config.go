@@ -16,8 +16,8 @@ type Config struct {
 	TlsConfig *tls.Config
 }
 
-func LoadFromKubeConfig(contextName string) (*Config, error) {
-	kubePath := getKubeConfigPath()
+func LoadFromKubeConfig(path, contextName string) (*Config, error) {
+	kubePath := getKubeConfigPath(path)
 	file, err := os.Open(kubePath)
 	if err != nil {
 		return nil, err
@@ -46,11 +46,16 @@ func LoadFromKubeConfig(contextName string) (*Config, error) {
 	return conf, nil
 }
 
-func getKubeConfigPath() string {
+func getKubeConfigPath(path string) string {
+	if path != "" {
+		return path
+	}
+
 	if usr, err := osUser.Current(); err == nil {
 		return filepath.Join(usr.HomeDir, ".kube/config")
 	}
-	return ""
+
+	return ".kube/config"
 }
 
 func (c *Config) ClientOpts() []client.Opt {
