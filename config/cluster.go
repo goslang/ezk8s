@@ -24,8 +24,10 @@ func (cl *cluster) loadServerCA() (*x509.CertPool, error) {
 	errs[0] = cl.AddCertsFromData(pool)
 	errs[1] = cl.AddCertsFromFile(pool)
 
-	for _, err := range errs {
-		if err != nil {
+	for idx, err := range errs {
+		if err == nil {
+			break
+		} else if err != nil && idx == len(errs) {
 			return nil, err
 		}
 	}

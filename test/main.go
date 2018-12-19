@@ -4,19 +4,20 @@ import (
 	"fmt"
 	"os"
 
-	k8s "github.com/tma1/ezk8s"
+	"github.com/tma1/ezk8s"
 	"github.com/tma1/ezk8s/config"
 	"github.com/tma1/ezk8s/query"
 )
 
 func main() {
-	cl := k8s.New(
-		query.Host("192.168.99.100:8443"),
-		query.Scheme("https"),
-		query.AuthBearer("This is a test"),
-	)
+	conf, err := config.LoadFromKubeConfig("minikube")
 
-	config.LoadFromKubeConfig()
+	cl := conf.Client(
+		ezk8s.QueryOpts(
+			query.Host("192.168.99.100:8443"),
+			query.Scheme("https"),
+		),
+	)
 
 	res, err := cl.Query(
 		query.Deployment("nginx-deployment"),

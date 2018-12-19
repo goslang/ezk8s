@@ -17,6 +17,13 @@ func (u *user) loadClientTls() (tls.Certificate, error) {
 		)
 	}
 
+	if u.hasCertFiles() {
+		return tls.LoadX509KeyPair(
+			u.ClientCertificate,
+			u.ClientKey,
+		)
+	}
+
 	return tls.LoadX509KeyPair(
 		u.ClientCertificate,
 		u.ClientKey,
@@ -24,7 +31,11 @@ func (u *user) loadClientTls() (tls.Certificate, error) {
 }
 
 func (u *user) hasCertData() bool {
-	return u.ClientCertificateData == "" && u.ClientKeyData == ""
+	return u.ClientCertificateData != "" && u.ClientKeyData != ""
+}
+
+func (u *user) hasCertFiles() bool {
+	return u.ClientCertificate != "" && u.ClientKey != ""
 }
 
 type UserData struct {

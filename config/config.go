@@ -2,20 +2,22 @@ package config
 
 import (
 	"crypto/tls"
-	"fmt"
 	"net/http"
 	"os"
+	osUser "os/user"
+	"path/filepath"
 
 	"gopkg.in/yaml.v2"
+
+	client "github.com/tma1/ezk8s"
 )
 
-const kubePath = "/Users/andrewknapp/.kube/config"
-
 type Config struct {
-	transport *http.Transport
+	TlsConfig *tls.Config
 }
 
-func LoadFromKubeConfig() (*Config, error) {
+func LoadFromKubeConfig(contextName string) (*Config, error) {
+	kubePath := getKubeConfigPath()
 	file, err := os.Open(kubePath)
 	if err != nil {
 		return nil, err
@@ -27,24 +29,42 @@ func LoadFromKubeConfig() (*Config, error) {
 		return nil, err
 	}
 
-	fmt.Println(k8Conf.GetContext("minikube"))
-	return nil, nil
-}
-
-func buildTlsTransport(pemKey, pemCert []byte) (*http.Transport, error) {
-	cert, err := tls.X509KeyPair(pemKey, pemCert)
+	k8Ctx, err := k8Conf.GetContext(contextName)
 	if err != nil {
 		return nil, err
 	}
 
-	tlsConfig := tls.Config{
-		Certificates: []tls.Certificate{cert},
-	}
-	tlsConfig.BuildNameToCertificate()
-
-	transport := http.Transport{
-		TLSClientConfig: &tlsConfig,
+	tlsConfig, err := k8Ctx.loadTlsConfig()
+	if err != nil {
+		return nil, err
 	}
 
-	return &transport, nil
+	conf := &Config{
+		TlsConfig: tlsConfig,
+	}
+
+	return conf, nil
+}
+
+func getKubeConfigPath() string {
+	if usr, err := osUser.Current(); err == nil {
+		return filepath.Join(usr.HomeDir, ".kube/config")
+	}
+	return ""
+}
+
+func (c *Config) ClientOpts() []client.Opt {
+	return []client.Opt{
+		client.Transport(buildTlsTransport(c.TlsConfig)),
+	}
+}
+
+func (c *Config) Client(opts ...client.Opt) *client.Client {
+	return client.New(opts...).With(c.ClientOpts()...)
+}
+
+func buildTlsTransport(tlsConfig *tls.Config) *http.Transport {
+	return &http.Transport{
+		TLSClientConfig: tlsConfig,
+	}
 }
