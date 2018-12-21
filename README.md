@@ -1,6 +1,6 @@
 ## ezk8s
 
-Easy to use schemaless Golang-Kubernetes client.
+Easy to use, schemaless Golang-Kubernetes client.
 
 ### Why This Project?
 
