@@ -6,6 +6,7 @@ import (
 	"net/url"
 )
 
+// Query represents a single request to the Kubernetes API that.
 type Query struct {
 	method string
 	host   string
@@ -20,6 +21,8 @@ type Query struct {
 	query url.Values
 }
 
+// New returns a new query configured with the supplied options. It also
+// attempts to use sane defaults.
 func New(opts ...Opt) *Query {
 	q := &Query{
 		apiVersion: "/api/v1",
@@ -36,6 +39,7 @@ func New(opts ...Opt) *Query {
 	return newQ
 }
 
+// With applies the options to a new Query based off of the old one.
 func (q *Query) With(opts ...Opt) *Query {
 	newQ := q
 
@@ -46,6 +50,8 @@ func (q *Query) With(opts ...Opt) *Query {
 	return newQ
 }
 
+// Request returns the HTTP representation of the Query, suitable for use by
+// an http.Client.
 func (q *Query) Request() (*http.Request, error) {
 	reqUrl, err := q.url()
 	if err != nil {

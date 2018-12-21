@@ -33,7 +33,7 @@ func (ctxs Contexts) Lookup(name string) (*Context, bool) {
 	return nil, false
 }
 
-// KubeContext loads manages configuration from a .kube/config context and
+// KubeContext manages configuration from a .kube/config context and
 // implements config.Config.
 type KubeContext struct {
 	Cluster Cluster
