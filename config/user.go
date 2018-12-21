@@ -9,25 +9,21 @@ type user struct {
 	UserData `yaml:"user"`
 }
 
-func (u *user) loadClientTls() (tls.Certificate, error) {
+// loadClientTls returns the Certificate and an error if encountered
+// In the case that no data was configured, error will be nil, but the
+// certificate will still be a zero value. If this occurs, the final bool will
+// return false, indicating that nothing was loaded, even though there was no
+// error.
+func (u *user) loadClientTls() (tls.Certificate, error, bool) {
 	if u.hasCertData() {
-		return tls.X509KeyPair(
-			[]byte(u.ClientCertificateData),
-			[]byte(u.ClientKeyData),
-		)
+		return u.loadCertificateData()
 	}
 
 	if u.hasCertFiles() {
-		return tls.LoadX509KeyPair(
-			u.ClientCertificate,
-			u.ClientKey,
-		)
+		return u.loadCertificateFiles()
 	}
 
-	return tls.LoadX509KeyPair(
-		u.ClientCertificate,
-		u.ClientKey,
-	)
+	return tls.Certificate{}, nil, false
 }
 
 func (u *user) hasCertData() bool {
@@ -36,6 +32,30 @@ func (u *user) hasCertData() bool {
 
 func (u *user) hasCertFiles() bool {
 	return u.ClientCertificate != "" && u.ClientKey != ""
+}
+
+func (u *user) loadCertificateFiles() (tls.Certificate, error, bool) {
+	cert, err := tls.LoadX509KeyPair(
+		u.ClientCertificate,
+		u.ClientKey,
+	)
+
+	if err != nil {
+		return cert, err, false
+	}
+	return cert, nil, true
+}
+
+func (u *user) loadCertificateData() (tls.Certificate, error, bool) {
+	cert, err := tls.LoadX509KeyPair(
+		u.ClientCertificate,
+		u.ClientKey,
+	)
+
+	if err != nil {
+		return cert, err, false
+	}
+	return cert, nil, true
 }
 
 type UserData struct {

@@ -36,21 +36,22 @@ type kubeContext struct {
 }
 
 func (kc *kubeContext) loadTlsConfig() (*tls.Config, error) {
-	clientCert, _ := kc.user.loadClientTls()
-	//if err != nil {
-	//	return nil, err
-	//}
+	tlsConf := tls.Config{}
 
-	cas, _ := kc.cluster.loadServerCA()
-	//if err != nil {
-	//	return nil, err
-	//}
-
-	tlsConf := tls.Config{
-		Certificates: []tls.Certificate{clientCert},
-		RootCAs:      cas,
+	clientCert, err, didLoad := kc.user.loadClientTls()
+	if err != nil {
+		return nil, err
+	} else if didLoad {
+		tlsConf.Certificates = []tls.Certificate{clientCert}
 	}
-	tlsConf.BuildNameToCertificate()
 
+	cas, err, didLoad := kc.cluster.loadServerCA()
+	if err != nil {
+		return nil, err
+	} else if didLoad {
+		tlsConf.RootCAs = cas
+	}
+
+	tlsConf.BuildNameToCertificate()
 	return &tlsConf, nil
 }

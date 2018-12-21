@@ -10,15 +10,10 @@ import (
 )
 
 func main() {
-	conf, err := config.LoadFromKubeConfig("", "minikube")
+	conf, err := config.LoadFromKubeConfig("", "microk8s")
 	exitOnErr(err)
 
-	cl := conf.Client(
-		ezk8s.QueryOpts(
-			query.Host("192.168.99.100:8443"),
-			query.Scheme("https"),
-		),
-	)
+	cl := conf.Client()
 
 	getDeploymentDetails(cl)
 	fmt.Println("")

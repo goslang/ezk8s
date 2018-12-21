@@ -7,9 +7,8 @@ import (
 )
 
 type Query struct {
-	scheme string
-	host   string // includes port number
 	method string
+	host   string
 
 	header http.Header
 
@@ -26,9 +25,8 @@ func New(opts ...Opt) *Query {
 		apiVersion: "/api/v1",
 		namespace:  "default",
 
-		scheme: "http",
-		host:   "localhost",
 		method: "GET",
+		host:   "http://localhost",
 
 		header: make(http.Header),
 		query:  make(url.Values),
@@ -48,23 +46,31 @@ func (q *Query) With(opts ...Opt) *Query {
 	return newQ
 }
 
-func (q *Query) Request() *http.Request {
+func (q *Query) Request() (*http.Request, error) {
+	reqUrl, err := q.url()
+	if err != nil {
+		return nil, err
+	}
+
 	req := &http.Request{
 		Method: q.method,
-		URL:    q.url(),
+		URL:    reqUrl,
 		Header: q.header,
 	}
 
-	return req
+	return req, nil
 }
 
-func (q *Query) url() *url.URL {
-	return &url.URL{
-		Scheme:   q.scheme,
-		Host:     q.host,
-		Path:     q.path(),
-		RawQuery: q.query.Encode(),
+func (q *Query) url() (*url.URL, error) {
+	fullUrl, err := url.Parse(q.host)
+	if err != nil {
+		return nil, err
 	}
+
+	fullUrl.Path = q.path()
+	fullUrl.RawQuery = q.query.Encode()
+
+	return fullUrl, nil
 }
 
 func (q *Query) path() string {

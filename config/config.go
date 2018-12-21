@@ -10,13 +10,18 @@ import (
 	"gopkg.in/yaml.v2"
 
 	client "github.com/goslang/ezk8s"
+	"github.com/goslang/ezk8s/query"
 )
 
 type Config struct {
 	TlsConfig *tls.Config
+
+	Host string
 }
 
 func LoadFromKubeConfig(path, contextName string) (*Config, error) {
+	conf := &Config{}
+
 	kubePath := getKubeConfigPath(path)
 	file, err := os.Open(kubePath)
 	if err != nil {
@@ -34,14 +39,12 @@ func LoadFromKubeConfig(path, contextName string) (*Config, error) {
 		return nil, err
 	}
 
-	tlsConfig, err := k8Ctx.loadTlsConfig()
+	conf.TlsConfig, err = k8Ctx.loadTlsConfig()
 	if err != nil {
 		return nil, err
 	}
 
-	conf := &Config{
-		TlsConfig: tlsConfig,
-	}
+	conf.Host = k8Ctx.cluster.ClusterData.Server
 
 	return conf, nil
 }
@@ -59,8 +62,13 @@ func getKubeConfigPath(path string) string {
 }
 
 func (c *Config) ClientOpts() []client.Opt {
+	queryOpts := []query.Opt{
+		query.Host(c.Host),
+	}
+
 	return []client.Opt{
 		client.Transport(buildTlsTransport(c.TlsConfig)),
+		client.QueryOpts(queryOpts...),
 	}
 }
 

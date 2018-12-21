@@ -17,7 +17,11 @@ type cluster struct {
 	ClusterData `yaml:"cluster"`
 }
 
-func (cl *cluster) loadServerCA() (*x509.CertPool, error) {
+// loadServerCA returns the CA authorities for the server and an error if one was
+// encountered. The final return will be true iff data was loaded, and false
+// otherwise. This is necessary because it is possible to not load anything
+// but still not fail, e.g. no CA was configured.
+func (cl *cluster) loadServerCA() (*x509.CertPool, error, bool) {
 	pool := x509.NewCertPool()
 
 	errs := [2]error{}
@@ -28,11 +32,11 @@ func (cl *cluster) loadServerCA() (*x509.CertPool, error) {
 		if err == nil {
 			break
 		} else if err != nil && idx == len(errs) {
-			return nil, err
+			return nil, err, false
 		}
 	}
 
-	return pool, nil
+	return pool, nil, true
 }
 
 func (cl *cluster) AddCertsFromData(pool *x509.CertPool) error {

@@ -45,13 +45,6 @@ func Host(host string) Opt {
 	}
 }
 
-func Scheme(scheme string) Opt {
-	return func(q Query) *Query {
-		q.scheme = scheme
-		return &q
-	}
-}
-
 func Method(method string) Opt {
 	return func(q Query) *Query {
 		q.method = method

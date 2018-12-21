@@ -25,7 +25,11 @@ func (cl *Client) Query(opts ...query.Opt) (*query.Result, error) {
 	)
 
 	result := query.NewResult()
-	req := q.Request()
+	req, err := q.Request()
+	if err != nil {
+		return nil, err
+	}
+
 	response, err := cl.Do(req)
 	if err != nil {
 		return nil, err
