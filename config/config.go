@@ -9,7 +9,7 @@ import (
 
 	"gopkg.in/yaml.v2"
 
-	client "github.com/tma1/ezk8s"
+	client "github.com/goslang/ezk8s"
 )
 
 type Config struct {

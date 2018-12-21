@@ -3,7 +3,7 @@ package ezk8s
 import (
 	"net/http"
 
-	"github.com/tma1/ezk8s/query"
+	"github.com/goslang/ezk8s/query"
 )
 
 type Opt func(c Client) *Client

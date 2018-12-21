@@ -33,7 +33,7 @@ func Pod(name string) Opt {
 
 func Label(name, value string) Opt {
 	return func(q Query) *Query {
-		q.labels.Add(name, value)
+		q.query.Add("labelSelector", name+"="+value)
 		return &q
 	}
 }

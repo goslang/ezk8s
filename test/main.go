@@ -4,13 +4,14 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/tma1/ezk8s"
-	"github.com/tma1/ezk8s/config"
-	"github.com/tma1/ezk8s/query"
+	"github.com/goslang/ezk8s"
+	"github.com/goslang/ezk8s/config"
+	"github.com/goslang/ezk8s/query"
 )
 
 func main() {
 	conf, err := config.LoadFromKubeConfig("", "minikube")
+	exitOnErr(err)
 
 	cl := conf.Client(
 		ezk8s.QueryOpts(
@@ -19,42 +20,52 @@ func main() {
 		),
 	)
 
+	getDeploymentDetails(cl)
+	fmt.Println("")
+	getPodNames(cl)
+}
+
+func getDeploymentDetails(cl *ezk8s.Client) {
+	res, err := cl.Query(
+		query.Deployment("nginx-deployment"),
+	)
+	exitOnErr(err)
+
+	var resourceVersion string
+	var generation float64
+	err = res.Scan(
+		query.Path{"$.metadata.resourceVersion", &resourceVersion},
+		query.Path{"$.metadata.generation", &generation},
+	)
+	exitOnErr(err)
+
+	fmt.Println("Deployment details")
+	fmt.Printf("generation = %v\n", generation)
+	fmt.Printf("resourceVersion = %v\n", resourceVersion)
+}
+
+func getPodNames(cl *ezk8s.Client) {
 	res, err := cl.Query(
 		query.Pod(""),
-		query.Label("name", "nginx"),
+		query.Label("app", "nginx"),
 	)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-
-	//var resourceVersion string
-	//var generation float64
-	//err = res.Scan(
-	//	query.Path{"$.metadata.resourceVersion", &resourceVersion},
-	//	query.Path{"$.metadata.generation", &generation},
-	//)
-	//if err != nil {
-	//	fmt.Println(err)
-	//	os.Exit(1)
-	//}
-
-	//fmt.Printf(
-	//	"generation = %v\nresourceVersion = %v\n",
-	//	generation, resourceVersion,
-	//)
+	exitOnErr(err)
 
 	var names []string
 	err = res.Scan(
-		query.Path{"$.items[:0].metadata.name", &names},
+		query.Path{"$.items[:].metadata.name", &names},
 	)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	exitOnErr(err)
 
 	fmt.Println("pod names:")
 	for _, name := range names {
 		fmt.Println(name)
+	}
+}
+
+func exitOnErr(err error) {
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
 	}
 }
