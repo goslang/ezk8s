@@ -5,15 +5,16 @@ import (
 	"os"
 
 	"github.com/goslang/ezk8s"
-	"github.com/goslang/ezk8s/config"
+	config "github.com/goslang/ezk8s/config/kube"
 	"github.com/goslang/ezk8s/query"
 )
 
 func main() {
-	conf, err := config.LoadFromKubeConfig("", "minikube")
+	conf, err := config.New("", "minikube")
 	exitOnErr(err)
 
-	cl := conf.Client()
+	cl, err := conf.Client()
+	exitOnErr(err)
 
 	getDeploymentDetails(cl)
 }

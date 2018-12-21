@@ -1,4 +1,4 @@
-package config
+package kube
 
 import (
 	"errors"
@@ -13,12 +13,12 @@ var (
 type kubeConfig struct {
 	CurrentContext string `yaml:"current-context"`
 
-	Clusters clusters
-	Users    users
-	Contexts contexts
+	Clusters Clusters
+	Users    Users
+	Contexts Contexts
 }
 
-func (kc *kubeConfig) GetContext(name string) (*kubeContext, error) {
+func (kc *kubeConfig) GetContext(name string) (*KubeContext, error) {
 	ctx, ok := kc.Contexts.Lookup(name)
 	if !ok {
 		return nil, ErrContextNotFound
@@ -34,9 +34,9 @@ func (kc *kubeConfig) GetContext(name string) (*kubeContext, error) {
 		return nil, ErrClusterNotFound
 	}
 
-	kubeCtx := &kubeContext{
-		cluster: *c,
-		user:    *u,
+	kubeCtx := &KubeContext{
+		Cluster: *c,
+		User:    *u,
 	}
 
 	return kubeCtx, nil

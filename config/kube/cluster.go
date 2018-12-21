@@ -1,4 +1,4 @@
-package config
+package kube
 
 import (
 	"crypto/x509"
@@ -12,7 +12,7 @@ var (
 	ErrInvalidCAData = errors.New("Couldn't parse CA data for cluster.")
 )
 
-type cluster struct {
+type Cluster struct {
 	Name        string
 	ClusterData `yaml:"cluster"`
 }
@@ -21,7 +21,7 @@ type cluster struct {
 // encountered. The final return will be true iff data was loaded, and false
 // otherwise. This is necessary because it is possible to not load anything
 // but still not fail, e.g. no CA was configured.
-func (cl *cluster) loadServerCA() (*x509.CertPool, error, bool) {
+func (cl *Cluster) loadServerCA() (*x509.CertPool, error, bool) {
 	pool := x509.NewCertPool()
 
 	errs := [2]error{}
@@ -39,7 +39,7 @@ func (cl *cluster) loadServerCA() (*x509.CertPool, error, bool) {
 	return pool, nil, true
 }
 
-func (cl *cluster) AddCertsFromData(pool *x509.CertPool) error {
+func (cl *Cluster) AddCertsFromData(pool *x509.CertPool) error {
 	if cl.CertificateAuthorityData == "" {
 		return ErrNoPEMData
 	}
@@ -51,7 +51,7 @@ func (cl *cluster) AddCertsFromData(pool *x509.CertPool) error {
 	return nil
 }
 
-func (cl *cluster) AddCertsFromFile(pool *x509.CertPool) error {
+func (cl *Cluster) AddCertsFromFile(pool *x509.CertPool) error {
 	if cl.CertificateAuthority == "" {
 		return ErrNoPEMFile
 	}
@@ -74,9 +74,9 @@ type ClusterData struct {
 	CertificateAuthority     string `yaml:"certificate-authority"`
 }
 
-type clusters []cluster
+type Clusters []Cluster
 
-func (cls clusters) Lookup(name string) (*cluster, bool) {
+func (cls Clusters) Lookup(name string) (*Cluster, bool) {
 	for _, cluster := range cls {
 		if cluster.Name == name {
 			return &cluster, true
