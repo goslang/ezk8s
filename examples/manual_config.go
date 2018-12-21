@@ -5,34 +5,23 @@ import (
 	"os"
 
 	"github.com/goslang/ezk8s"
-	config "github.com/goslang/ezk8s/config/kube"
 	"github.com/goslang/ezk8s/query"
 )
 
 func main() {
-	conf, err := config.New("", "minikube")
-	exitOnErr(err)
+	cl := &ezk8s.Client{}
 
-	cl, err := conf.Client()
-	exitOnErr(err)
-
-	getPodNames(cl)
-}
-
-func getPodNames(cl *ezk8s.Client) {
 	res, err := cl.Query(
+		query.Host("http://127.0.0.1:8001"),
 		query.Pod(""),
-		query.Label("app", "nginx"),
 	)
 	exitOnErr(err)
 
 	var names []string
 	err = res.Scan(
-		query.Path{"$.items[:].metadata.name", &names},
+		query.Path{"$.items[0:-1].metadata.name", &names},
 	)
-	exitOnErr(err)
 
-	fmt.Println("pod names:")
 	for _, name := range names {
 		fmt.Println(name)
 	}

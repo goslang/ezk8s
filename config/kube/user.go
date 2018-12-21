@@ -1,10 +1,10 @@
-package config
+package kube
 
 import (
 	"crypto/tls"
 )
 
-type user struct {
+type User struct {
 	Name     string
 	UserData `yaml:"user"`
 }
@@ -14,7 +14,7 @@ type user struct {
 // certificate will still be a zero value. If this occurs, the final bool will
 // return false, indicating that nothing was loaded, even though there was no
 // error.
-func (u *user) loadClientTls() (tls.Certificate, error, bool) {
+func (u *User) loadClientTls() (tls.Certificate, error, bool) {
 	if u.hasCertData() {
 		return u.loadCertificateData()
 	}
@@ -26,15 +26,15 @@ func (u *user) loadClientTls() (tls.Certificate, error, bool) {
 	return tls.Certificate{}, nil, false
 }
 
-func (u *user) hasCertData() bool {
+func (u *User) hasCertData() bool {
 	return u.ClientCertificateData != "" && u.ClientKeyData != ""
 }
 
-func (u *user) hasCertFiles() bool {
+func (u *User) hasCertFiles() bool {
 	return u.ClientCertificate != "" && u.ClientKey != ""
 }
 
-func (u *user) loadCertificateFiles() (tls.Certificate, error, bool) {
+func (u *User) loadCertificateFiles() (tls.Certificate, error, bool) {
 	cert, err := tls.LoadX509KeyPair(
 		u.ClientCertificate,
 		u.ClientKey,
@@ -46,7 +46,7 @@ func (u *user) loadCertificateFiles() (tls.Certificate, error, bool) {
 	return cert, nil, true
 }
 
-func (u *user) loadCertificateData() (tls.Certificate, error, bool) {
+func (u *User) loadCertificateData() (tls.Certificate, error, bool) {
 	cert, err := tls.LoadX509KeyPair(
 		u.ClientCertificate,
 		u.ClientKey,
@@ -66,9 +66,9 @@ type UserData struct {
 	ClientKeyData         string `yaml:"client-key-data"`
 }
 
-type users []user
+type Users []User
 
-func (us users) Lookup(name string) (*user, bool) {
+func (us Users) Lookup(name string) (*User, bool) {
 	for _, u := range us {
 		if u.Name == name {
 			return &u, true
