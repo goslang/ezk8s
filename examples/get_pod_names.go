@@ -10,33 +10,11 @@ import (
 )
 
 func main() {
-	conf, err := config.LoadFromKubeConfig("", "microk8s")
+	conf, err := config.LoadFromKubeConfig("", "minikube")
 	exitOnErr(err)
 
 	cl := conf.Client()
-
-	getDeploymentDetails(cl)
-	fmt.Println("")
 	getPodNames(cl)
-}
-
-func getDeploymentDetails(cl *ezk8s.Client) {
-	res, err := cl.Query(
-		query.Deployment("nginx-deployment"),
-	)
-	exitOnErr(err)
-
-	var resourceVersion string
-	var generation float64
-	err = res.Scan(
-		query.Path{"$.metadata.resourceVersion", &resourceVersion},
-		query.Path{"$.metadata.generation", &generation},
-	)
-	exitOnErr(err)
-
-	fmt.Println("Deployment details")
-	fmt.Printf("generation = %v\n", generation)
-	fmt.Printf("resourceVersion = %v\n", resourceVersion)
 }
 
 func getPodNames(cl *ezk8s.Client) {

@@ -9,7 +9,7 @@ import (
 
 	"gopkg.in/yaml.v2"
 
-	client "github.com/goslang/ezk8s"
+	"github.com/goslang/ezk8s"
 	"github.com/goslang/ezk8s/query"
 )
 
@@ -61,19 +61,19 @@ func getKubeConfigPath(path string) string {
 	return ".kube/config"
 }
 
-func (c *Config) ClientOpts() []client.Opt {
+func (c *Config) ClientOpts() []ezk8s.Opt {
 	queryOpts := []query.Opt{
 		query.Host(c.Host),
 	}
 
-	return []client.Opt{
-		client.Transport(buildTlsTransport(c.TlsConfig)),
-		client.QueryOpts(queryOpts...),
+	return []ezk8s.Opt{
+		ezk8s.Transport(buildTlsTransport(c.TlsConfig)),
+		ezk8s.QueryOpts(queryOpts...),
 	}
 }
 
-func (c *Config) Client(opts ...client.Opt) *client.Client {
-	return client.New(opts...).With(c.ClientOpts()...)
+func (c *Config) Client(opts ...ezk8s.Opt) *ezk8s.Client {
+	return ezk8s.New(opts...).With(c.ClientOpts()...)
 }
 
 func buildTlsTransport(tlsConfig *tls.Config) *http.Transport {
