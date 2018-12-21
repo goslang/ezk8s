@@ -1,4 +1,4 @@
-# ezk8s ![GoDoc](https://godoc.org/goslang/ezk8s?status.svg)
+# ezk8s [![GoDoc](https://godoc.org/goslang/ezk8s?status.svg)](https://godoc.org/github.com/goslang/ezk8s)
 
 Easy to use, schemaless Golang-Kubernetes client.
 
