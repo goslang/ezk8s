@@ -2,6 +2,7 @@ package query
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 )
@@ -17,6 +18,8 @@ type Query struct {
 	namespace    string
 	resourceType string
 	resource     string
+
+	body io.ReadCloser
 
 	query url.Values
 }
@@ -62,6 +65,7 @@ func (q *Query) Request() (*http.Request, error) {
 		Method: q.method,
 		URL:    reqUrl,
 		Header: q.header,
+		Body:   q.body,
 	}
 
 	return req, nil
