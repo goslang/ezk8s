@@ -1,10 +1,10 @@
 package query
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 )
 
 // Query represents a single request to the Kubernetes API that.
@@ -84,11 +84,21 @@ func (q *Query) url() (*url.URL, error) {
 }
 
 func (q *Query) path() string {
-	return fmt.Sprintf(
-		"%v/namespaces/%v/%v/%v",
-		q.apiVersion,
-		q.namespace,
-		q.resourceType,
-		q.resource,
-	)
+	parts := []string{q.apiVersion}
+
+	push := func(strs ...string) {
+		for _, s := range strs {
+			if s == "" {
+				return
+			}
+		}
+
+		parts = append(parts, strs...)
+	}
+
+	push("namespaces", q.namespace)
+	push(q.resourceType)
+	push(q.resource)
+
+	return strings.Join(parts, "/")
 }

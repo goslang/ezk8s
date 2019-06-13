@@ -10,6 +10,13 @@ import (
 // Opt returns a new Query with the provided configuration
 type Opt func(Query) *Query
 
+func Namespace(namespace string) Opt {
+	return func(q Query) *Query {
+		q.namespace = namespace
+		return &q
+	}
+}
+
 // Resource sets the resource type and name for the query.
 func Resource(resourceType, name string) Opt {
 	return func(q Query) *Query {
@@ -43,6 +50,15 @@ func Deployment(name string) Opt {
 // Passing an empty string will return all matching Pods.
 func Pod(name string) Opt {
 	return Resource("pods", name)
+}
+
+func Node(name string) Opt {
+	resource := Resource("nodes", name)
+	namespace := Namespace("")
+
+	return func(q Query) *Query {
+		return resource(*namespace(q))
+	}
 }
 
 // Eviction is a convenience method for sending a pod Eviction to the
