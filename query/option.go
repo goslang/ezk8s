@@ -39,7 +39,7 @@ func ApiVersion(version string) Opt {
 // matching Deployments.
 func Deployment(name string) Opt {
 	resource := Resource("deployments", name)
-	version := ApiVersion("/apis/apps/v1beta1")
+	version := ApiVersion("/apis/apps/v1")
 
 	return func(q Query) *Query {
 		return resource(*version(q))
