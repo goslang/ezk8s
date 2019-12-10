@@ -2,6 +2,8 @@ package ezk8s
 
 import (
 	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"net/http"
 
 	"github.com/goslang/ezk8s/query"
@@ -41,11 +43,19 @@ func (cl *Client) Query(opts ...query.Opt) (*query.Result, error) {
 	}
 	defer response.Body.Close()
 
+	if response.StatusCode >= 300 || response.StatusCode < 200 {
+		buf, _ := ioutil.ReadAll(response.Body)
+		return nil, fmt.Errorf(
+			"Error Response code %v\nresponse body: %s",
+			response.StatusCode,
+			buf,
+		)
+	}
+
 	decoder := json.NewDecoder(response.Body)
 	if err := decoder.Decode(&result.Data); err != nil {
 		return nil, err
 	}
-
 	return result, nil
 }
 
