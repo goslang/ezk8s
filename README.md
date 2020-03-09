@@ -13,4 +13,4 @@ It's just an HTTP API, right? It shouldn't be that hard.
 
 ### Project Status
 
-This Project is highly experimental and not recommended for production applications.
+This Project is highly experimental.
