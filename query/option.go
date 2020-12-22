@@ -61,6 +61,18 @@ func Node(name string) Opt {
 	}
 }
 
+// PersistentVolume is a convenience method that sets the resourceType, name,
+// and an empty namespace. Passing an empty string as name will return all
+// matching PersistentVolumes.
+func PersistentVolume(name string) Opt {
+	resource := Resource("persistentvolumes", name)
+	namespace := Namespace("")
+
+	return func(q Query) *Query {
+		return resource(*namespace(q))
+	}
+}
+
 // Eviction is a convenience method for sending a pod Eviction to the
 // Kubernetes API.
 func Eviction(name string) Opt {
