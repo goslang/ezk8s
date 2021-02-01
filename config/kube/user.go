@@ -48,8 +48,8 @@ func (u *User) loadCertificateFiles() (tls.Certificate, error, bool) {
 
 func (u *User) loadCertificateData() (tls.Certificate, error, bool) {
 	cert, err := tls.LoadX509KeyPair(
-		u.ClientCertificate,
-		u.ClientKey,
+		u.ClientCertificateData,
+		u.ClientKeyData,
 	)
 
 	if err != nil {
