@@ -2,6 +2,7 @@ package kube
 
 import (
 	"crypto/tls"
+	"encoding/base64"
 )
 
 type User struct {
@@ -47,9 +48,11 @@ func (u *User) loadCertificateFiles() (tls.Certificate, error, bool) {
 }
 
 func (u *User) loadCertificateData() (tls.Certificate, error, bool) {
-	cert, err := tls.LoadX509KeyPair(
-		u.ClientCertificateData,
-		u.ClientKeyData,
+	certData, _ := base64.StdEncoding.DecodeString(u.ClientCertificateData)
+	keyData, _ := 	base64.StdEncoding.DecodeString(u.ClientKeyData)
+	cert, err := tls.X509KeyPair(
+		certData,
+		keyData,
 	)
 
 	if err != nil {
