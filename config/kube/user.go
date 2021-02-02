@@ -48,8 +48,14 @@ func (u *User) loadCertificateFiles() (tls.Certificate, error, bool) {
 }
 
 func (u *User) loadCertificateData() (tls.Certificate, error, bool) {
-	certData, _ := base64.StdEncoding.DecodeString(u.ClientCertificateData)
-	keyData, _ := base64.StdEncoding.DecodeString(u.ClientKeyData)
+	certData, err := base64.StdEncoding.DecodeString(u.ClientCertificateData)
+	if err != nil {
+		return tls.Certificate{}, err, false
+	}
+	keyData, err := base64.StdEncoding.DecodeString(u.ClientKeyData)
+	if err != nil {
+		return tls.Certificate{}, err, false
+	}
 	cert, err := tls.X509KeyPair(
 		certData,
 		keyData,
