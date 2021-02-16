@@ -73,6 +73,17 @@ func PersistentVolume(name string) Opt {
 	}
 }
 
+func Watch(resourceVersion string) Opt {
+	return func(q Query) *Query {
+		q.query.Add("watch", "1")
+
+		if resourceVersion != "" {
+			q.query.Add("resourceVersion", resourceVersion)
+		}
+		return &q
+	}
+}
+
 // Eviction is a convenience method for sending a pod Eviction to the
 // Kubernetes API.
 func Eviction(name string) Opt {
@@ -91,6 +102,13 @@ func Eviction(name string) Opt {
 	}
 }
 
+func Body(reader io.ReadCloser) Opt {
+	return func(q Query) *Query {
+		q.body = reader
+		return &q
+	}
+}
+
 func Json(j interface{}) Opt {
 	buf, _ := json.Marshal(j) // TODO: Ignoring error
 	reader := bytes.NewReader(buf)
@@ -98,11 +116,8 @@ func Json(j interface{}) Opt {
 	return Body(ioutil.NopCloser(reader))
 }
 
-func Body(reader io.ReadCloser) Opt {
-	return func(q Query) *Query {
-		q.body = reader
-		return &q
-	}
+func BodyBytes(buf []byte) Opt {
+	return Body(ioutil.NopCloser(bytes.NewReader(buf)))
 }
 
 // Label applies a labelSelector to the request.

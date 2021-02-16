@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-// Query represents a single request to the Kubernetes API that.
+// Query represents a single request to the Kubernetes API.
 type Query struct {
 	method string
 	host   string
@@ -18,6 +18,9 @@ type Query struct {
 	namespace    string
 	resourceType string
 	resource     string
+	watch        bool
+
+	transport http.Transport
 
 	body io.ReadCloser
 
@@ -61,6 +64,7 @@ func (q *Query) Request() (*http.Request, error) {
 		return nil, err
 	}
 
+	println(reqUrl.String())
 	req := &http.Request{
 		Method: q.method,
 		URL:    reqUrl,

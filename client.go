@@ -3,6 +3,7 @@ package ezk8s
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 
@@ -57,6 +58,30 @@ func (cl *Client) Query(opts ...query.Opt) (*query.Result, error) {
 		return nil, err
 	}
 	return result, nil
+}
+
+func (cl *Client) Stream(opts ...query.Opt) (io.ReadCloser, error) {
+	q := cl.applyDefaults(query.New(opts...))
+
+	req, err := q.Request()
+	if err != nil {
+		return nil, err
+	}
+
+	response, err := cl.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	if response.StatusCode >= 300 || response.StatusCode < 200 {
+		buf, _ := ioutil.ReadAll(response.Body)
+		return nil, fmt.Errorf(
+			"Error Response code %v\nresponse body: %s",
+			response.StatusCode,
+			buf,
+		)
+	}
+	return response.Body, nil
 }
 
 // With creates a new client after applying the supplied options.
