@@ -13,4 +13,4 @@ It's just an HTTP API, right? It shouldn't be that hard.
 
 ### Project Status
 
-This Project is highly experimental.
+This Project is functional, but still under active development.
