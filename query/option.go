@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io"
 	"io/ioutil"
+	"strings"
 )
 
 // Opt returns a new Query with the provided configuration
@@ -105,12 +106,49 @@ func Body(reader io.ReadCloser) Opt {
 	}
 }
 
-// Label applies a labelSelector to the request.
-func Label(name, value string) Opt {
+// Param adds a query parameter, name, to the Request URL with the given value.
+func Param(name, value string) Opt {
 	return func(q Query) *Query {
-		q.query.Add("labelSelector", name+"="+value)
+		q.query.Add(name, value)
 		return &q
 	}
+}
+
+// Selector adds a labelSelector query parameter if one does not exist. If one
+// does exist, it appends the selector on to the existing list.
+func Selector(selector string) Opt {
+	return func(q Query) *Query {
+		selectors := q.query.Get("labelSelector")
+		if selectors == "" {
+			selectors = selector
+		} else {
+			selectors = strings.Join([]string{selectors, selector}, ",")
+		}
+
+		q.query.Set("labelSelector", selectors)
+		return &q
+	}
+}
+
+// Label applies a labelSelector to the request of the form "name=value". Use
+// Selector for other forms of Kubernetes Selectors.
+//
+// Multiple Label options will be passed in a single labelSelector query
+// parameter.
+func Label(name, value string) Opt {
+	return Selector(name + "=" + value)
+}
+
+// Labels applies a labelSelector to the request including all of the label
+// names found in the provided map. This has the same effect as calling
+// Label("key", "value") for each item in labels.
+func Labels(labels map[string]string) Opt {
+	selectors := []string{}
+	for l, v := range labels {
+		selectors = append(selectors, l+"="+v)
+	}
+
+	return Selector(strings.Join(selectors, ","))
 }
 
 // Host sets the host name for the request. This will typically be set as a
