@@ -130,17 +130,18 @@ func Selector(selector string) Opt {
 	}
 }
 
-// Label applies a labelSelector to the request. Multiple Label options will
-// result in a logical "OR" when fetching objects.
+// Label applies a labelSelector to the request of the form "name=value". Use
+// Selector for other forms of Kubernetes Selectors.
+//
+// Multiple Label options will be passed in a single labelSelector query
+// parameter.
 func Label(name, value string) Opt {
 	return Selector(name + "=" + value)
 }
 
 // Labels applies a labelSelector to the request including all of the label
-// names found in the provided map, logically "AND"ed together.
-//
-// Passing this Opt multiple times will result in multiple labelSelector query
-// params being added to the request.
+// names found in the provided map. This has the same effect as calling
+// Label("key", "value") for each item in labels.
 func Labels(labels map[string]string) Opt {
 	selectors := []string{}
 	for l, v := range labels {
