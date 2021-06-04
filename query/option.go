@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io"
 	"io/ioutil"
+	"strings"
 )
 
 // Opt returns a new Query with the provided configuration
@@ -105,10 +106,30 @@ func Body(reader io.ReadCloser) Opt {
 	}
 }
 
-// Label applies a labelSelector to the request.
+// Label applies a labelSelector to the request. Multiple Label options will
+// result in a logical "OR" when fetching objects.
 func Label(name, value string) Opt {
+	return Param("labelSelector", name+"="+value)
+}
+
+// Labels applies a labelSelector to the request including all of the label
+// names found in the provided map, logically "AND"ed together.
+//
+// Passing this Opt multiple times will result in multiple labelSelector query
+// params being added to the request.
+func Labels(labels map[string]string) Opt {
+	selectors := []string{}
+	for l, v := range labels {
+		selectors = append(selectors, l+"="+v)
+	}
+
+	return Param("labelSelector", strings.Join(selectors, ","))
+}
+
+// Param adds a query parameter, name, to the Request URL with the given value.
+func Param(name, value string) Opt {
 	return func(q Query) *Query {
-		q.query.Add("labelSelector", name+"="+value)
+		q.query.Add(name, value)
 		return &q
 	}
 }
