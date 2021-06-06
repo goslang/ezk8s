@@ -1,15 +1,18 @@
 package query
 
-type Result struct {
-	mapping map[string]interface{}
+import (
+	"encoding/json"
+)
 
+type Result struct {
 	Data map[string]interface{}
+
+	decoder json.Decoder
 }
 
 func NewResult() *Result {
 	return &Result{
-		mapping: make(map[string]interface{}),
-		Data:    make(map[string]interface{}),
+		Data: make(map[string]interface{}),
 	}
 }
 
