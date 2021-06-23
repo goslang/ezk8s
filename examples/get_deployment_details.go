@@ -20,14 +20,11 @@ func main() {
 }
 
 func getDeploymentDetails(cl *ezk8s.Client) {
-	res, err := cl.Query(
-		query.Deployment("nginx-deployment"),
-	)
-	exitOnErr(err)
+	res := cl.Query(query.Deployment("nginx-deployment"))
 
 	var resourceVersion string
 	var generation float64
-	err = res.Scan(
+	err := res.Scan(
 		query.Path{"$.metadata.resourceVersion", &resourceVersion},
 		query.Path{"$.metadata.generation", &generation},
 	)

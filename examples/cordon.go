@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	context := flag.String("context", "proxy", "The config context to use")
+	context := flag.String("context", "minikube", "The config context to use")
 	name := flag.String("node", "", "The node to cordon")
 	enabled := flag.Bool("enable", false, "Disable the node")
 	flag.Parse()
@@ -20,25 +20,24 @@ func main() {
 	cl, err := conf.Client()
 	exitOnErr(err)
 
-	node, err := cl.Query(
-		query.Node(*name),
-	)
+	node := make(map[string]interface{})
+	err = cl.Query(query.Node(*name)).Decode(&node)
 	exitOnErr(err)
 
 	setNodeState(*enabled, node)
-	_, err = cl.Query(
+	err = cl.Query(
 		query.Node(*name),
 		query.Method("PUT"),
-		query.Json(node.Data),
-	)
+		query.Json(node),
+	).Error()
 	exitOnErr(err)
 }
 
-func setNodeState(enabled bool, node *query.Result) {
-	spec, ok := node.Data["spec"].(map[string]interface{})
+func setNodeState(enabled bool, node map[string]interface{}) {
+	spec, ok := node["spec"].(map[string]interface{})
 	if !ok {
 		spec = make(map[string]interface{})
-		node.Data["spec"] = spec
+		node["spec"] = spec
 	}
 	spec["unschedulable"] = !enabled
 }

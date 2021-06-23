@@ -1,21 +1,63 @@
 package query
 
-type Result struct {
-	mapping map[string]interface{}
+import (
+	"encoding/json"
+	"io"
+)
 
-	Data map[string]interface{}
+type Result interface {
+	Error() error
+	Decode(target interface{}) error
+	Scan(paths ...Path) error
 }
 
-func NewResult() *Result {
-	return &Result{
-		mapping: make(map[string]interface{}),
-		Data:    make(map[string]interface{}),
+type errorResult func() error
+
+func NewErrorResult(err error) errorResult {
+	return func() error { return err }
+}
+
+func (er errorResult) Decode(_ interface{}) error {
+	return er()
+}
+
+func (er errorResult) Error() error {
+	return er()
+}
+
+func (er errorResult) Scan(_ ...Path) error {
+	return er()
+}
+
+type decodeResult func(target interface{}) error
+
+func NewDecodeResult(reader io.ReadCloser) decodeResult {
+	return func(target interface{}) error {
+		defer reader.Close()
+
+		if target == nil {
+			return nil
+		}
+		return json.NewDecoder(reader).Decode(target)
 	}
 }
 
-func (r *Result) Scan(paths ...Path) error {
+func (dr decodeResult) Decode(target interface{}) error {
+	return dr(target)
+}
+
+func (dr decodeResult) Error() error {
+	return dr(nil)
+}
+
+func (dr decodeResult) Scan(paths ...Path) error {
+	data := make(map[string]interface{})
+	if err := dr.Decode(&data); err != nil {
+		return err
+	}
+
 	for _, path := range paths {
-		err := path.Apply(r.Data)
+		err := path.Apply(data)
 		if err != nil {
 			return err
 		}
