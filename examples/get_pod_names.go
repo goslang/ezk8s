@@ -22,8 +22,7 @@ func main() {
 func getPodNames(cl *ezk8s.Client) {
 	res := cl.Query(
 		query.Pod(""),
-		query.Namespace("notebook"),
-		query.Label("app.deltabravo.ai/cname", "delta-bravo"),
+		query.Label("app", "nginx"),
 	)
 
 	var names []string
