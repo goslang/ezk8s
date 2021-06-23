@@ -23,6 +23,9 @@ func New(opts ...Opt) *Client {
 	return cl.With(opts...)
 }
 
+// Query sends a request to the Kubernetes API and returns the result. If an
+// error occurred during the request, calling any method on the Result will
+// return that error.
 func (cl *Client) Query(opts ...query.Opt) query.Result {
 	q := cl.applyDefaults(
 		query.New(opts...),
