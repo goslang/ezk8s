@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	conf, err := config.New("", "proxy")
+	conf, err := config.New("", "minikube")
 	exitOnErr(err)
 
 	podName := flag.String("pod", "", "The pod to evict")
@@ -26,9 +26,7 @@ func main() {
 func evictPod(podName string, cl *ezk8s.Client) {
 	fmt.Println("Evicting", podName)
 
-	_, err := cl.Query(
-		query.Eviction(podName),
-	)
+	err := cl.Query(query.Eviction(podName)).Error()
 	exitOnErr(err)
 
 	fmt.Printf("Evicted %v\n", podName)

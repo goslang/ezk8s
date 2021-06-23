@@ -20,14 +20,14 @@ func main() {
 }
 
 func getPodNames(cl *ezk8s.Client) {
-	res, err := cl.Query(
+	res := cl.Query(
 		query.Pod(""),
-		query.Label("app", "nginx"),
+		query.Namespace("notebook"),
+		query.Label("app.deltabravo.ai/cname", "delta-bravo"),
 	)
-	exitOnErr(err)
 
 	var names []string
-	err = res.Scan(
+	err := res.Scan(
 		query.Path{"$.items[:].metadata.name", &names},
 	)
 	exitOnErr(err)
