@@ -23,7 +23,7 @@ func Transport(transport http.RoundTripper) Opt {
 // should not change between requests.
 func QueryOpts(opts ...query.Opt) Opt {
 	return func(c Client) *Client {
-		c.DefaultOpts = opts
+		c.DefaultOpts = append(c.DefaultOpts, opts...)
 		return &c
 	}
 }
