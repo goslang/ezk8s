@@ -2,6 +2,7 @@ package kube
 
 import (
 	"crypto/x509"
+	"encoding/base64"
 	"errors"
 	"io/ioutil"
 )
@@ -44,7 +45,12 @@ func (cl *Cluster) AddCertsFromData(pool *x509.CertPool) error {
 		return ErrNoPEMData
 	}
 
-	ok := pool.AppendCertsFromPEM([]byte(cl.CertificateAuthorityData))
+	pem, err := base64.StdEncoding.DecodeString(cl.CertificateAuthorityData)
+	if err != nil {
+		return err
+	}
+
+	ok := pool.AppendCertsFromPEM(pem)
 	if !ok {
 		return ErrInvalidCAData
 	}
