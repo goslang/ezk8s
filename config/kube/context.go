@@ -52,10 +52,7 @@ func (kc *KubeContext) ClientOpts() (opts []ezk8s.Opt, err error) {
 
 	transport := kc.buildTlsTransport()
 	if kc.User.UserData.Exec != nil {
-		transport = &ExecTripper{
-			exec: *kc.User.UserData.Exec,
-			next: transport,
-		}
+		transport = NewExecTripper(*kc.User.UserData.Exec, transport)
 	}
 
 	// Build the client.Opts

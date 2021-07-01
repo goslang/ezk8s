@@ -1,13 +1,8 @@
 package kube
 
 import (
-	"bytes"
 	"crypto/tls"
 	"encoding/base64"
-	"encoding/json"
-	"net/http"
-	"os/exec"
-	"time"
 )
 
 type Users []User
@@ -28,66 +23,12 @@ type UserData struct {
 }
 
 type UserExec struct {
-	Command            string
-	Args               []string
-	Env                map[string]string
-	ProvideClusterInfo bool
-}
+	Command string
+	Args    []string
+	Env     map[string]string
 
-// ExecCredential is the expected format returned by executing a "UserExec".
-type ExecCredential struct {
-	Kind       string
-	ApiVersion string
-	Status     struct {
-		Token                 string
-		ExpirationTimestamp   time.Time
-		ClientCertificateData string
-		ClientKeyData         string
-	}
-}
-
-// ExecTripper is an http.RoundTripper that will inject the credentials
-// returned by running "exec" into the request. The request will then be
-// forwarded to "next".
-type ExecTripper struct {
-	exec UserExec
-	next http.RoundTripper
-
-	expiration time.Time
-	creds      ExecCredential
-}
-
-func (et *ExecTripper) RoundTrip(r *http.Request) (*http.Response, error) {
-	if et.expiration.IsZero() || time.Now().After(et.expiration.Add(time.Minute*-1)) {
-		if err := et.load(); err != nil {
-			return nil, err
-		}
-	}
-
-	r.Header["Authorization"] = []string{"bearer " + et.creds.Status.Token}
-	return et.next.RoundTrip(r)
-}
-
-func (et *ExecTripper) load() error {
-	stdout := &bytes.Buffer{}
-	stderr := &bytes.Buffer{}
-
-	cmd := exec.Command(et.exec.Command, et.exec.Args...)
-	cmd.Stdout = stdout
-	cmd.Stderr = stderr
-
-	if err := cmd.Run(); err != nil {
-		// TODO: Return stderr output.
-		return err
-	}
-
-	var creds ExecCredential
-	if err := json.NewDecoder(stdout).Decode(&creds); err != nil {
-		return err
-	}
-
-	et.creds = creds
-	return nil
+	// NOTE: Does not support command-provided cluster details yet.
+	//ProvideClusterInfo bool
 }
 
 // loadClientTls returns the Certificate and an error if encountered
