@@ -5,9 +5,30 @@ import (
 	"encoding/base64"
 )
 
+type Users []User
+
 type User struct {
 	Name     string
 	UserData `yaml:"user"`
+}
+
+type UserData struct {
+	ClientCertificate string `yaml:"client-certificate"`
+	ClientKey         string `yaml:"client-key"`
+
+	ClientCertificateData string `yaml:"client-certificate-data"`
+	ClientKeyData         string `yaml:"client-key-data"`
+
+	Exec *UserExec
+}
+
+type UserExec struct {
+	Command string
+	Args    []string
+	Env     map[string]string
+
+	// NOTE: Does not support command-provided cluster details yet.
+	//ProvideClusterInfo bool
 }
 
 // loadClientTls returns the Certificate and an error if encountered
@@ -48,34 +69,9 @@ func (u *User) loadCertificateFiles() (tls.Certificate, error, bool) {
 }
 
 func (u *User) loadCertificateData() (tls.Certificate, error, bool) {
-	certData, err := base64.StdEncoding.DecodeString(u.ClientCertificateData)
-	if err != nil {
-		return tls.Certificate{}, err, false
-	}
-	keyData, err := base64.StdEncoding.DecodeString(u.ClientKeyData)
-	if err != nil {
-		return tls.Certificate{}, err, false
-	}
-	cert, err := tls.X509KeyPair(
-		certData,
-		keyData,
-	)
-
-	if err != nil {
-		return cert, err, false
-	}
-	return cert, nil, true
+	cert, err := loadCertificateData(u.ClientCertificateData, u.ClientKeyData)
+	return cert, err, err == nil
 }
-
-type UserData struct {
-	ClientCertificate string `yaml:"client-certificate"`
-	ClientKey         string `yaml:"client-key"`
-
-	ClientCertificateData string `yaml:"client-certificate-data"`
-	ClientKeyData         string `yaml:"client-key-data"`
-}
-
-type Users []User
 
 func (us Users) Lookup(name string) (*User, bool) {
 	for _, u := range us {
@@ -84,4 +80,18 @@ func (us Users) Lookup(name string) (*User, bool) {
 		}
 	}
 	return nil, false
+}
+
+func loadCertificateData(cert, key string) (tls.Certificate, error) {
+	certData, err := base64.StdEncoding.DecodeString(cert)
+	if err != nil {
+		return tls.Certificate{}, err
+	}
+
+	keyData, err := base64.StdEncoding.DecodeString(key)
+	if err != nil {
+		return tls.Certificate{}, err
+	}
+
+	return tls.X509KeyPair(certData, keyData)
 }

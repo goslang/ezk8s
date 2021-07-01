@@ -50,9 +50,14 @@ func (kc *KubeContext) ClientOpts() (opts []ezk8s.Opt, err error) {
 		query.Host(kc.Cluster.ClusterData.Server),
 	}
 
+	transport := kc.buildTlsTransport()
+	if kc.User.UserData.Exec != nil {
+		transport = NewExecTripper(*kc.User.UserData.Exec, transport)
+	}
+
 	// Build the client.Opts
 	opts = []ezk8s.Opt{
-		ezk8s.Transport(kc.buildTlsTransport()),
+		ezk8s.Transport(transport),
 		ezk8s.QueryOpts(queryOpts...),
 	}
 
@@ -72,7 +77,7 @@ func (kc *KubeContext) Client(opts ...ezk8s.Opt) (*ezk8s.Client, error) {
 
 // buildTlsTransport builds an http.Transport that includes TLS details.
 // Panics on error.
-func (kc *KubeContext) buildTlsTransport() *http.Transport {
+func (kc *KubeContext) buildTlsTransport() http.RoundTripper {
 	return &http.Transport{
 		TLSClientConfig: kc.loadTlsConfig(),
 	}
